@@ -2,65 +2,53 @@ package com.example.corountinekotlindemo
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
-import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        button.setOnClickListener {
-            setNewText("Clicked!!")
-            fakeApiRequest()
+        CoroutineScope(Main).launch {
+            println("debug: Starting job in Thread: ${Thread.currentThread().name}")
+
+            val result1=getResult()
+            println("debug: Result#1 :$result1")
+
+            val result2=getResult()
+            println("debug: Result#2 :$result2")
+
+            val result3 = getResult()
+            println("debug: Result#3 :$result3")
+
+            val result4 = getResult()
+            println("debug: Result#4 :$result4")
+
         }
-    }
 
-    private fun fakeApiRequest(){
-
-
-            CoroutineScope(IO).launch {
-              val executionTime = measureTimeMillis {
-                  val result1: Deferred<String> = async {
-                      println("debug: launching job1 in thread ${Thread.currentThread().name}")
-                      getResult1FromApi()
-                  }
-                  val result2: Deferred<String> = async {
-                      println("debug: launching job2 in thread ${Thread.currentThread().name}")
-                      getResult2FromApi()
-                  }
-                  setTextOnMainThread("Got ${result1.await()}")
-                  setTextOnMainThread("Got ${result2.await()}")
-              }
-                println("debug: Time elapsed: $executionTime")
+        CoroutineScope(Main).launch {
+            runBlocking {
+                println("debug: Blocking Thread: ${Thread.currentThread().name}")
+                delay(1000)
+                println("debug: Done Blocking thread: ${Thread.currentThread().name}")
             }
-
-
-
-
-    }
-    private fun setNewText(input: String){
-        val newText = text.text.toString() + "\n$input"
-        text.text = newText
-    }
-    private suspend fun setTextOnMainThread(input: String) {
-        withContext (Main) {
-            println("debug: setting text in ${Thread.currentThread().name} thread")
-            setNewText(input)
+            //runblocking is used to block everything on that thread and executes this code first
         }
-    }
-    private suspend fun getResult1FromApi(): String {
-        delay(1000)
-        return "Result #1"
+
+
     }
 
-    private suspend fun getResult2FromApi(): String {
-        delay(1700)
-        return "Result #2"
+    private suspend fun getResult(): Int{
+       delay(1000)
+       return Random.nextInt(1,100)
     }
+
+
 
 
 }
